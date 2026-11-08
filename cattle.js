@@ -123,8 +123,42 @@ function cancelCattleEdit() {
 }
 
 function saveCattle() {
-  var tag = (getEl('cowTag').value || '').trim(); if (!tag) return alert('Tag ID দিন!');
-  var data = { tag: tag, breed: getEl('cowBreed').value, breedType: getEl('cowBreedType').value, generation: getEl('cowGeneration').value, dob: getEl('cowDob').value, weight: parseFloat(getEl('cowWeight').value)||0, lactation: parseFloat(getEl('cowLactation').value)||0, status: getEl('cowStatus').value, milkDay: parseFloat(getEl('cowMilkDay').value)||0, sire: getEl('cowSire').value, dam: getEl('cowDam').value, expCalving: getEl('cowExpCalving').value };
-  if (db) eCatKey ? db.ref('cattle/' + eCatKey).update(data) : db.ref('cattle').push(data);
+  var tag = (getEl('cowTag').value || '').trim(); 
+  if (!tag) return alert('Tag ID দিন!');
+  
+  var data = { 
+    tag: tag, 
+    breed: getEl('cowBreed').value, 
+    breedType: getEl('cowBreedType').value, 
+    generation: getEl('cowGeneration').value, 
+    dob: getEl('cowDob').value, 
+    weight: parseFloat(getEl('cowWeight').value) || 0, 
+    lactation: parseFloat(getEl('cowLactation').value) || 0, 
+    status: getEl('cowStatus').value, 
+    milkDay: parseFloat(getEl('cowMilkDay').value) || 0, 
+    sire: getEl('cowSire').value, 
+    dam: getEl('cowDam').value, 
+    expCalving: getEl('cowExpCalving').value 
+  };
+
+  if (db) {
+    if (eCatKey) {
+      db.ref('cattle/' + eCatKey).update(data).then(function() {
+        console.log('Cattle updated successfully');
+      }).catch(function(error) {
+        console.error('Error updating cattle:', error);
+        alert('ডেটা আপডেট করতে সমস্যা হয়েছে: ' + error.message);
+      });
+    } else {
+      db.ref('cattle').push(data).then(function() {
+        console.log('Cattle saved successfully');
+      }).catch(function(error) {
+        console.error('Error saving cattle:', error);
+        alert('ডেটা সেভ করতে সমস্যা হয়েছে: ' + error.message);
+      });
+    }
+  } else {
+    alert('ডেটাবেস কানেকশন পাওয়া যায়নি!');
+  }
   cancelCattleEdit();
 }
