@@ -154,7 +154,116 @@
         </div>
       </div>
 
-      <!-- ৪. Milk Tab -->
+      <!-- ৪. Insemination Tab (নতুন আপডেটসহ) -->
+      <div id="tab-insemination" class="tab-content" style="display: none;">
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h2 style="margin:0; border:none; padding:0;">🧬 Advanced Insemination & Pedigree Register</h2>
+            <button class="action-btn btn-info" onclick="switchTab('dashboard', document.querySelector('nav button'))">⬅ Back (ফিরে যান)</button>
+          </div>
+          <div class="form-grid">
+            <div class="input-group"><label>Cattle ID (Tag) *</label><input type="text" id="insCowTag" list="cattleTagList" onchange="autoCalcExpectedCalving()" placeholder="NDA-001"></div>
+            <div class="input-group"><label>AI Date *</label><input type="date" id="insAiDate" onchange="autoCalcExpectedCalving()"></div>
+            <div class="input-group"><label>Semen / Bull ID</label><input type="text" id="insSemenId" oninput="analyzePedigreeAndGenetics()" placeholder="ষাঁড় বা সিমেন আইডি"></div>
+            <div class="input-group"><label>Company</label><input type="text" id="insCompany" placeholder="কোম্পানি"></div>
+            <div class="input-group"><label>AI Cost ₹</label><input type="number" id="insAiCost" placeholder="₹"></div>
+            
+            <!-- নতুন অ্যাডভান্সড ফিল্ডসমূহ -->
+            <div class="input-group"><label>Straw Quantity *</label><input type="number" id="insStrawQty" value="1" min="1" placeholder="১"></div>
+            <div class="input-group"><label>AI Technician / Doctor Name</label><input type="text" id="insTechName" placeholder="ডাক্তার বা টেকনিশিয়ানের নাম"></div>
+            <div class="input-group"><label>Doctor / Service Fee ₹</label><input type="number" id="insDoctorFee" placeholder="₹"></div>
+            <div class="input-group"><label>Liquid Nitrogen / Other Cost ₹</label><input type="number" id="insN2Cost" placeholder="₹"></div>
+            <div class="input-group"><label>Medicine Cost ₹</label><input type="number" id="insMedCost" placeholder="₹"></div>
+            <div class="input-group"><label>Repeat Breeder Status</label><select id="insRepeatHistory"><option value="Normal">Normal (প্রথমবার)</option><option value="Repeat Breeder">Repeat Breeder (বারবার ফেল)</option><option value="Hormonal Treatment Needed">Hormonal Treatment Needed</option></select></div>
+            <input type="hidden" id="insRepeatHeatDate">
+
+            <div class="input-group"><label>Pregnancy Test Date</label><input type="date" id="insPdDate"></div>
+            <div class="input-group"><label>Status</label><select id="insStatus"><option value="Pending">Pending</option><option value="Pregnant">Pregnant</option><option value="Failed">Failed</option><option value="Calved">Calved</option></select></div>
+            <div class="input-group"><label>Exp. Calving Date</label><input type="date" id="insExpCalvingDate"></div>
+            <div class="input-group"><label>Actual Calving Date</label><input type="date" id="insActCalvingDate"></div>
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button class="btn" id="insSubmitBtn" onclick="saveInseminationRecord()">Save Insemination Record</button>
+            <button class="btn btn-warning" id="insCancelBtn" style="display:none;" onclick="cancelInseminationEdit()">Cancel</button>
+          </div>
+        </div>
+        <div class="card">
+          <h2>ইনসেমিনেশন ও জেনেটিক রেকর্ড তালিকা</h2>
+          <div class="table-container">
+            <table>
+              <thead><tr><th>Cattle ID</th><th>AI Date</th><th>Semen / Straw</th><th>Tech / Company</th><th>Total Exp</th><th>PD Date</th><th>Status</th><th>Exp. Calving</th><th>Actual Calving</th><th>Repeat Status</th><th>Action</th></tr></thead>
+              <tbody id="inseminationTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ৫. Heat Register Tab -->
+      <div id="tab-heat" class="tab-content" style="display: none;">
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h2 style="margin:0; border:none; padding:0;">🔥 Heat Register</h2>
+            <button class="action-btn btn-info" onclick="switchTab('dashboard', document.querySelector('nav button'))">⬅ Back (ফিরে যান)</button>
+          </div>
+          <div class="form-grid">
+            <div class="input-group"><label>Cattle Tag ID *</label><input type="text" id="heatCowTag" list="cattleTagList" placeholder="NDA-001"></div>
+            <div class="input-group"><label>Heat Date *</label><input type="date" id="heatDate"></div>
+            <div class="input-group"><label>Signs / Symptoms</label><select id="heatSigns"><option value="Standing Heat">Standing Heat</option><option value="Mucus Discharge">Mucus Discharge</option><option value="Restlessness">Restlessness</option><option value="Mounting Others">Mounting Others</option></select></div>
+            <div class="input-group"><label>Exp. AI Date</label><input type="date" id="heatExpAiDate"></div>
+            <div class="input-group"><label>Note</label><input type="text" id="heatNote" placeholder="নোট"></div>
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button class="btn" id="heatSubmitBtn" onclick="saveHeatRecord()">Save Heat Record</button>
+            <button class="btn btn-warning" id="heatCancelBtn" style="display:none;" onclick="cancelHeatEdit()">Cancel</button>
+          </div>
+        </div>
+        <div class="card">
+          <h2>হিট রেকর্ড তালিকা</h2>
+          <div class="table-container">
+            <table>
+              <thead><tr><th>Tag ID</th><th>Heat Date</th><th>Signs</th><th>Exp. AI Date</th><th>Note</th><th>Action</th></tr></thead>
+              <tbody id="heatTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ৬. Vaccination Tab -->
+      <div id="tab-vaccine" class="tab-content" style="display: none;">
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h2 style="margin:0; border:none; padding:0;">💉 Vaccination Register</h2>
+            <button class="action-btn btn-info" onclick="switchTab('dashboard', document.querySelector('nav button'))">⬅ Back (ফিরে যান)</button>
+          </div>
+          <div class="form-grid">
+            <div class="input-group"><label>Tag ID *</label><input type="text" id="vacCowTag" list="cattleTagList" placeholder="NDA-001"></div>
+            <div class="input-group"><label>Vaccine Name *</label><input type="text" id="vacName" placeholder="FMD / BQ"></div>
+            <div class="input-group"><label>Date *</label><input type="date" id="vacDate"></div>
+            <div class="input-group"><label>Next Dose Date</label><input type="date" id="vacNextDate"></div>
+            <div class="input-group"><label>Cost ₹</label><input type="number" id="vacCost" placeholder="₹"></div>
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button class="btn" id="vacSubmitBtn" onclick="saveVaccineRecord()">Save Vaccine Record</button>
+            <button class="btn btn-warning" id="vacCancelBtn" style="display:none;" onclick="cancelVaccineEdit()">Cancel</button>
+          </div>
+        </div>
+        <div class="card">
+          <h2>টিকা রেকর্ড তালিকা</h2>
+          <div class="table-container">
+            <table>
+              <thead><tr><th>Tag ID</th><th>Vaccine Name</th><th>Date</th><th>Next Dose</th><th>Cost</th><th>Action</th></tr></thead>
+              <tbody id="vaccineTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ৭. Deworming Tab -->
+      <div id="tab-deworm" class="tab-content" style="display: none;">
+        <!-- Deworming Content -->
+      </div>
+
+      <!-- ৮. Milk Tab -->
       <div id="tab-milk" class="tab-content" style="display: none;">
         <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -184,7 +293,7 @@
         </div>
       </div>
 
-      <!-- ৫. Sales Tab -->
+      <!-- ৯. Sales Tab -->
       <div id="tab-sales" class="tab-content" style="display: none;">
         <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -227,7 +336,7 @@
         </div>
       </div>
 
-      <!-- ৬. Customer Tab -->
+      <!-- ১০. Customer Tab -->
       <div id="tab-customers" class="tab-content" style="display: none;">
         <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -260,7 +369,7 @@
         </div>
       </div>
 
-      <!-- ৭. Orders Tab -->
+      <!-- ১১. Orders Tab -->
       <div id="tab-orders" class="tab-content" style="display: none;">
         <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -300,7 +409,7 @@
         </div>
       </div>
 
-      <!-- ৮. Feed Tab -->
+      <!-- ১২. Feed Tab -->
       <div id="tab-feed" class="tab-content" style="display: none;">
         <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -310,7 +419,6 @@
           <div class="form-grid">
             <div class="input-group"><label>Date *</label><input type="date" id="rationDate"></div>
             <div class="input-group"><label>Cattle Tag ID *</label><input type="text" id="ratCowTag" list="cattleTagList" onchange="loadCattleDefaultRation()" placeholder="NDA-001"></div>
-            
             <div class="input-group"><label>Cattle Feed / Pellets (kg) [স্টক: <span id="stkLbl-Cattle Feed">0</span>]</label><input type="number" step="0.1" id="ratPellet" oninput="autoCalcRation()" value="2.0" placeholder="০.০"></div>
             <div class="input-group"><label>Average Feed Cost per kg (₹)</label><input type="number" step="0.1" id="ratAvgCostPerKg" oninput="autoCalcRation()" value="32" placeholder="₹"></div>
             <div class="input-group"><label>Supplement / Vitamin Cost (₹)</label><input type="number" step="1" id="ratSuppCost" oninput="autoCalcRation()" value="0" placeholder="₹"></div>
@@ -333,7 +441,7 @@
         </div>
       </div>
 
-      <!-- ৯. Expenses Tab -->
+      <!-- ১৩. Expenses Tab -->
       <div id="tab-expenses" class="tab-content" style="display: none;">
         <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -363,7 +471,7 @@
         </div>
       </div>
 
-      <!-- ১০. Stock Tab -->
+      <!-- ১৪. Stock Tab -->
       <div id="tab-stock" class="tab-content" style="display: none;">
         <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -392,7 +500,7 @@
         </div>
       </div>
 
-      <!-- ১১. Semen/Bull Tab -->
+      <!-- ১৫. Semen/Bull Tab -->
       <div id="tab-semen" class="tab-content" style="display: none;">
         <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -421,7 +529,7 @@
         </div>
       </div>
 
-      <!-- ১২. Health Tab -->
+      <!-- ১৬. Health Tab -->
       <div id="tab-health" class="tab-content" style="display: none;">
         <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -451,7 +559,7 @@
         </div>
       </div>
 
-      <!-- ১৩. Reports Tab -->
+      <!-- ১৭. Reports Tab -->
       <div id="tab-reports" class="tab-content" style="display: none;">
         <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -468,7 +576,7 @@
         </div>
       </div>
 
-      <!-- ১৪. Backup Tab -->
+      <!-- ১৮. Backup Tab -->
       <div id="tab-backup" class="tab-content" style="display: none;">
         <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -572,6 +680,10 @@
   <script src="dashboard.js"></script>
   <script src="cattle.js"></script>
   <script src="breeding.js"></script>
+  <script src="insemination.js"></script>
+  <script src="heat.js"></script>
+  <script src="vaccine.js"></script>
+  <script src="deworm.js"></script>
   <script src="milk.js"></script>
   <script src="sales.js"></script>
   <script src="customer.js"></script>
