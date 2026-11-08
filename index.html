@@ -154,7 +154,7 @@
         </div>
       </div>
 
-      <!-- ৪. Insemination Tab (নতুন আপডেটসহ) -->
+      <!-- ৪. Insemination Tab -->
       <div id="tab-insemination" class="tab-content" style="display: none;">
         <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -168,7 +168,6 @@
             <div class="input-group"><label>Company</label><input type="text" id="insCompany" placeholder="কোম্পানি"></div>
             <div class="input-group"><label>AI Cost ₹</label><input type="number" id="insAiCost" placeholder="₹"></div>
             
-            <!-- নতুন অ্যাডভান্সড ফিল্ডসমূহ -->
             <div class="input-group"><label>Straw Quantity *</label><input type="number" id="insStrawQty" value="1" min="1" placeholder="১"></div>
             <div class="input-group"><label>AI Technician / Doctor Name</label><input type="text" id="insTechName" placeholder="ডাক্তার বা টেকনিশিয়ানের নাম"></div>
             <div class="input-group"><label>Doctor / Service Fee ₹</label><input type="number" id="insDoctorFee" placeholder="₹"></div>
@@ -228,30 +227,56 @@
         </div>
       </div>
 
-      <!-- ৬. Vaccination Tab -->
+      <!-- ৬. Vaccination Tab (নতুন উন্নত ফিচারসহ আপডেট করা) -->
       <div id="tab-vaccine" class="tab-content" style="display: none;">
         <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-            <h2 style="margin:0; border:none; padding:0;">💉 Vaccination Register</h2>
+            <h2 style="margin:0; border:none; padding:0;">💉 Advanced Vaccination Register & Safety Tracker</h2>
             <button class="action-btn btn-info" onclick="switchTab('dashboard', document.querySelector('nav button'))">⬅ Back (ফিরে যান)</button>
           </div>
           <div class="form-grid">
-            <div class="input-group"><label>Tag ID *</label><input type="text" id="vacCowTag" list="cattleTagList" placeholder="NDA-001"></div>
-            <div class="input-group"><label>Vaccine Name *</label><input type="text" id="vacName" placeholder="FMD / BQ"></div>
-            <div class="input-group"><label>Date *</label><input type="date" id="vacDate"></div>
-            <div class="input-group"><label>Next Dose Date</label><input type="date" id="vacNextDate"></div>
+            <div class="input-group"><label>Tag ID *</label><input type="text" id="vacCowTag" list="cattleTagList" onchange="onVaccineTagChange()" placeholder="NDA-001"></div>
+            
+            <div class="input-group"><label>Vaccine Name *</label>
+              <select id="vacName" onchange="onVaccineTypeSelect()">
+                <option value="FMD (Foot and Mouth Disease)">FMD (Foot and Mouth Disease)</option>
+                <option value="BQ (Black Quarter)">BQ (Black Quarter)</option>
+                <option value="HS (Haemorrhagic Septicaemia)">HS (Haemorrhagic Septicaemia)</option>
+                <option value="Brucellosis">Brucellosis</option>
+                <option value="Theileriosis">Theileriosis</option>
+                <option value="Anthrax">Anthrax</option>
+                <option value="Other Vaccine">Other Vaccine</option>
+              </select>
+            </div>
+
+            <div class="input-group"><label>Date *</label><input type="date" id="vacDate" onchange="onVaccineTypeSelect()"></div>
+            <div class="input-group"><label>Next Dose (Booster) Date</label><input type="date" id="vacNextDate"></div>
+            
+            <div class="input-group"><label>Dosage (mL) *</label><input type="number" step="0.1" id="vacDose" value="5.0" placeholder="৫.০"></div>
+            <div class="input-group"><label>Route of Administration</label>
+              <select id="vacRoute">
+                <option value="Subcutaneous (S/C)">Subcutaneous (S/C)</option>
+                <option value="Intramuscular (I/M)">Intramuscular (I/M)</option>
+                <option value="Intranasal">Intranasal</option>
+              </select>
+            </div>
+            <div class="input-group"><label>Batch Number</label><input type="text" id="vacBatchNo" placeholder="BATCH-8902"></div>
+            <div class="input-group"><label>Expiry Date</label><input type="date" id="vacExpiry"></div>
+            <div class="input-group"><label>Milk Withdrawal (Days)</label><input type="number" id="vacWithdrawalDays" value="7" placeholder="৭"></div>
             <div class="input-group"><label>Cost ₹</label><input type="number" id="vacCost" placeholder="₹"></div>
           </div>
+
           <div style="display:flex; gap:10px;">
             <button class="btn" id="vacSubmitBtn" onclick="saveVaccineRecord()">Save Vaccine Record</button>
             <button class="btn btn-warning" id="vacCancelBtn" style="display:none;" onclick="cancelVaccineEdit()">Cancel</button>
           </div>
         </div>
+
         <div class="card">
-          <h2>টিকা রেকর্ড তালিকা</h2>
+          <h2>টিকা রেকর্ড ও হেলথ পাসপোর্ট তালিকা</h2>
           <div class="table-container">
             <table>
-              <thead><tr><th>Tag ID</th><th>Vaccine Name</th><th>Date</th><th>Next Dose</th><th>Cost</th><th>Action</th></tr></thead>
+              <thead><tr><th>Tag ID</th><th>Vaccine & Batch</th><th>Dose & Route</th><th>Date</th><th>Next Dose</th><th>Cost</th><th>Digital Passport</th><th>Action</th></tr></thead>
               <tbody id="vaccineTableBody"></tbody>
             </table>
           </div>
@@ -260,7 +285,9 @@
 
       <!-- ৭. Deworming Tab -->
       <div id="tab-deworm" class="tab-content" style="display: none;">
-        <!-- Deworming Content -->
+        <div class="card">
+          <h2>Deworming Register</h2>
+        </div>
       </div>
 
       <!-- ৮. Milk Tab -->
