@@ -312,7 +312,7 @@
         </div>
       </div>
 
-    <!-- ৭. Deworming Tab -->
+  <!-- ৭. Deworming Tab -->
       <div id="tab-deworm" class="tab-content" style="display: none;">
         <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -331,7 +331,10 @@
                 <option value="Injection">Injection (Pour-on/Injectable)</option>
               </select>
             </div>
-            <div class="input-group"><label>Calculated Dose (Auto)</label><input type="text" id="dewormCalculatedDose" readonly style="background:#e8f5e9; color:#1b5e20; font-weight:bold;"></div>
+            
+            <!-- Calculated Dose (অটো আসার পাশাপাশি ম্যানুয়াল এডিটের সুযোগ) -->
+            <div class="input-group"><label>Calculated Dose (Auto / Manual)</label><input type="text" id="dewormCalculatedDose" placeholder="অটো আসবে বা নিজের মতো লিখুন" style="background:#f4fbf5; color:#1b5e20; font-weight:bold;"></div>
+            
             <div class="input-group"><label>Next Due Date (Auto)</label><input type="date" id="dewormNextDate"></div>
             <div class="input-group"><label>Cost ₹</label><input type="number" id="dewormCost" placeholder="₹"></div>
             <div class="input-group"><label>Remarks / Special Notes</label><input type="text" id="dewormNote" placeholder="বিশেষ নোট বা নির্দেশনা"></div>
@@ -351,7 +354,7 @@
             </table>
           </div>
         </div>
-      </div>   
+      </div> 
       
       <!-- ৮. Milk Tab -->
       <div id="tab-milk" class="tab-content" style="display: none;">
