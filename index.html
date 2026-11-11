@@ -197,7 +197,7 @@
         </div>
       </div>
 
-      <!-- ৫. Heat Register Tab -->
+   <!-- ৫. Heat Register Tab -->
       <div id="tab-heat" class="tab-content" style="display: none;">
         <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -206,10 +206,23 @@
           </div>
           <div class="form-grid">
             <div class="input-group"><label>Cattle Tag ID *</label><input type="text" id="heatCowTag" list="cattleTagList" onchange="calcDaysGapAndRepeatWarning()" placeholder="NDA-001"></div>
-            <div class="input-group"><label>Heat Date *</label><input type="date" id="heatDate" onchange="autoCalcHeatSchedule()"></div>
+            
+            <div class="input-group"><label>Heat Date & Time *</label><input type="datetime-local" id="heatDate" onchange="autoCalcHeatSchedule()"></div>
+            
             <div class="input-group"><label>Heat Time Session</label><select id="heatTimeSession"><option value="সকাল">সকাল (Morning)</option><option value="বিকাল">বিকাল (Afternoon)</option><option value="রাত">রাত (Night)</option></select></div>
             <div class="input-group"><label>Heat Intensity</label><select id="heatIntensity"><option value="Mild">Mild (মৃদু)</option><option value="Moderate" selected>Moderate (মাঝারি)</option><option value="Strong">Strong (তীব্র)</option></select></div>
-            <div class="input-group"><label>AI Attempt Count</label><select id="heatAiCount"><option value="১ নম্বর" selected>১ নম্বর AI / পাল</option><option value="২ নম্বর">২ নম্বর AI / পাল</option><option value="৩ নম্বর বা ততোধিক">৩ নম্বর বা ততোধিক</option></select></div>
+            
+            <!-- AI Attempt Count (1st, 2nd, 3rd + Custom Manual Input) -->
+            <div class="input-group"><label>AI Attempt Count</label>
+              <select id="heatAiCountSelect" onchange="onHeatInputTypeChange()">
+                <option value="1st Time" selected>1st Time</option>
+                <option value="2nd Time">2nd Time</option>
+                <option value="3rd Time">3rd Time</option>
+                <option value="Custom">Custom / Manual Type...</option>
+              </select>
+              <input type="text" id="heatAiCountInput" style="display:none; margin-top:5px;" placeholder="নিজের মতো লিখুন...">
+            </div>
+
             <div class="input-group"><label>Signs / Symptoms</label><select id="heatSigns"><option value="Standing Heat">Standing Heat</option><option value="Mucus Discharge">Mucus Discharge</option><option value="Restlessness">Restlessness</option><option value="Mounting Others">Mounting Others</option></select></div>
             <div class="input-group"><label>Current Status</label>
               <select id="heatStatus">
@@ -222,8 +235,10 @@
             <div class="input-group"><label>Inseminator / Doctor Name</label><input type="text" id="heatDocName" placeholder="ডাক্তার বা টেকনিশিয়ানের নাম"></div>
             <div class="input-group"><label>Doctor / Tech Mobile</label><input type="text" id="heatDocPhone" placeholder="মোবাইল নম্বর"></div>
             <div class="input-group"><label>Bull / Semen ID Used</label><input type="text" id="heatBullInfo" placeholder="কোন ষাঁড় বা সিমেনের ব্যাচ"></div>
-            <div class="input-group"><label>Exp. AI Best Time (Auto)</label><input type="date" id="heatExpAiDate"></div>
-            <div class="input-group"><label>Exp. Next Heat Date (Auto)</label><input type="date" id="heatNextDate"></div>
+            
+            <div class="input-group"><label>Exp. AI Best Time (Auto)</label><input type="datetime-local" id="heatExpAiDate"></div>
+            <div class="input-group"><label>Exp. Next Heat Date & Time (Auto)</label><input type="datetime-local" id="heatNextDate"></div>
+            
             <div class="input-group"><label>Note / Remarks</label><input type="text" id="heatNote" placeholder="বিশেষ নোট"></div>
           </div>
           <div style="display:flex; gap:10px; margin-top:10px;">
@@ -241,7 +256,6 @@
           </div>
         </div>
       </div>
-
       <!-- ৬. Vaccination Tab (নতুন উন্নত ফিচারসহ আপডেট করা) -->
       <div id="tab-vaccine" class="tab-content" style="display: none;">
         <div class="card">
