@@ -2,6 +2,8 @@
 // NANDA DAIRY & AGRO - ADVANCED HEAT REGISTER MODULE
 // ==========================================
 
+var eHeatKey = null;
+
 function onHeatInputTypeChange() {
   var sel = getEl('heatAiCountSelect');
   var txt = getEl('heatAiCountInput');
@@ -16,22 +18,23 @@ function onHeatInputTypeChange() {
   }
 }
 
-// হিটের তারিখ ও সময় থেকে সেরা AI সময় (১২-১৮ ঘণ্টা) এবং পরবর্তী হিট (২১ দিন) টাইমসহ অটো হিসাব করা
+// হিটের তারিখ ও সময় ইনপুট দেওয়ার সাথে সাথে অটো ক্যালকুলেট হওয়া
 function autoCalcHeatSchedule() {
-  var hDate = getEl('heatDate').value;
-  if (!hDate) return;
+  var hDateVal = getEl('heatDate').value;
+  if (!hDateVal) return;
 
-  var d = new Date(hDate);
-  
-  // সেরা AI সময় (১২ থেকে ১৮ ঘণ্টা পর, অর্থাৎ ১৫ ঘণ্টা যোগ করা)
+  var d = new Date(hDateVal);
+  if (isNaN(d.getTime())) return;
+
+  // সেরা AI সময় (১৫ ঘণ্টা পর)
   var expAiTime = new Date(d.getTime() + (15 * 60 * 60 * 1000));
-  var aiFormatted = expAiTime.toISOString().slice(0, 16); // YYYY-MM-DDTHH:mm format for datetime-local
-  if(getEl('heatExpAiDate')) getEl('heatExpAiDate').value = aiFormatted;
+  var aiFormatted = expAiTime.toISOString().slice(0, 16);
+  if (getEl('heatExpAiDate')) getEl('heatExpAiDate').value = aiFormatted;
 
-  // পরবর্তী সম্ভাব্য হিট (২১ দিন পর, একই সময়ে)
+  // পরবর্তী সম্ভাব্য হিট (২১ দিন বা ৫০৪ ঘণ্টা পর)
   var nextHeat = new Date(d.getTime() + (21 * 24 * 60 * 60 * 1000));
   var nextFormatted = nextHeat.toISOString().slice(0, 16);
-  if(getEl('heatNextDate')) getEl('heatNextDate').value = nextFormatted;
+  if (getEl('heatNextDate')) getEl('heatNextDate').value = nextFormatted;
 
   calcDaysGapAndRepeatWarning();
 }
@@ -61,8 +64,8 @@ function calcDaysGapAndRepeatWarning() {
   if (!warnBox) {
     warnBox = document.createElement('div');
     warnBox.id = 'heatRepeatWarningBox';
-    var formGrid = document.querySelector('#tab-heat .form-grid');
-    if (formGrid) formGrid.parentNode.insertBefore(warnBox, formGrid.nextSibling);
+    var formCard = document.querySelector('#tab-heat .card');
+    if (formCard) formCard.insertBefore(warnBox, formCard.firstChild);
   }
 
   if (failCount >= 2) {
@@ -72,8 +75,6 @@ function calcDaysGapAndRepeatWarning() {
   }
 }
 
-var eHeatKey = null;
-
 function editHeatRecord(k) {
   var d = farmStore.heat ? farmStore.heat[k] : null; if (!d) return; eHeatKey = k;
   getEl('heatCowTag').value = d.tag || '';
@@ -81,7 +82,6 @@ function editHeatRecord(k) {
   if(getEl('heatTimeSession')) getEl('heatTimeSession').value = d.timeSession || 'সকাল';
   if(getEl('heatIntensity')) getEl('heatIntensity').value = d.intensity || 'Moderate';
   
-  // AI Count Set
   var sel = getEl('heatAiCountSelect');
   var txt = getEl('heatAiCountInput');
   if (sel && txt) {
@@ -125,7 +125,7 @@ function saveHeatRecord() {
   var hDate = getEl('heatDate').value;
   if (!tag || !hDate) return alert('Cattle Tag ID এবং Heat Date দিন!');
 
-  var aiCountVal = (getEl('heatAiCountSelect').value === 'Custom') ? (getEl('heatAiCountInput').value || '1st Time') : getEl('heatAiCountSelect').value;
+  var aiCountVal = (getEl('heatAiCountSelect') && getEl('heatAiCountSelect').value === 'Custom') ? (getEl('heatAiCountInput').value || '1st Time') : (getEl('heatAiCountSelect') ? getEl('heatAiCountSelect').value : '1st Time');
   var statusVal = getEl('heatStatus') ? getEl('heatStatus').value : 'Pending AI';
 
   var data = {
@@ -206,14 +206,14 @@ function renderHeatTable() {
 
     html += '<tr>' +
       '<td><strong>' + (d.tag || '-') + '</strong></td>' +
-      '<td>' + d.date + ' (' + (d.timeSession || 'সকাল') + ')<br><small style="color:#555;">তীব্রতা: ' + (d.intensity || 'Moderate') + '</small></td>' +
+      '<td>' + (d.date ? d.date.replace('T', ' সময়: ') : '-') + ' (' + (d.timeSession || 'সকাল') + ')<br><small style="color:#555;">তীব্রতা: ' + (d.intensity || 'Moderate') + '</small></td>' +
       '<td>' + (d.aiCount || '1st Time') + '</td>' +
       '<td style="font-weight:bold; color:#1b5e20;">' + daysGapTxt + '</td>' +
       '<td><span class="badge ' + badgeClass + '">' + (d.status || 'Pending AI') + '</span><br><small>বুল: ' + (d.bullInfo || '-') + '</small></td>' +
-      '<td style="color:red; font-weight:bold;">' + (d.nextDate ? d.nextDate.replace('T', ' সময়: ') : '-') + '</td>' +
+      '<td style="color:red; font-weight:bold;">' + (d.nextDate ? d.nextDate.replace('T', ' সময়: ') : '-') + '</td>' +
       '<td>' +
-        '<button class="action-btn btn-info" onclick="editHeatRecord(\'' + k + \'')">Edit</button>' +
-        '<button class="action-btn btn-danger" onclick="deleteRecord(\'heat\',\'' + k + \'')">Delete</button>' +
+        '<button class="action-btn btn-info" onclick="editHeatRecord(\'' + k + '\')">Edit</button>' +
+        '<button class="action-btn btn-danger" onclick="deleteRecord(\'heat\',\'' + k + '\')">Delete</button>' +
       '</td>' +
     '</tr>';
   });
