@@ -201,26 +201,41 @@
       <div id="tab-heat" class="tab-content" style="display: none;">
         <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-            <h2 style="margin:0; border:none; padding:0;">🔥 Heat Register</h2>
+            <h2 style="margin:0; border:none; padding:0;">🔥 Advanced Heat & Breeding Intelligence Register</h2>
             <button class="action-btn btn-info" onclick="switchTab('dashboard', document.querySelector('nav button'))">⬅ Back (ফিরে যান)</button>
           </div>
           <div class="form-grid">
-            <div class="input-group"><label>Cattle Tag ID *</label><input type="text" id="heatCowTag" list="cattleTagList" placeholder="NDA-001"></div>
-            <div class="input-group"><label>Heat Date *</label><input type="date" id="heatDate"></div>
+            <div class="input-group"><label>Cattle Tag ID *</label><input type="text" id="heatCowTag" list="cattleTagList" onchange="calcDaysGapAndRepeatWarning()" placeholder="NDA-001"></div>
+            <div class="input-group"><label>Heat Date *</label><input type="date" id="heatDate" onchange="autoCalcHeatSchedule()"></div>
+            <div class="input-group"><label>Heat Time Session</label><select id="heatTimeSession"><option value="সকাল">সকাল (Morning)</option><option value="বিকাল">বিকাল (Afternoon)</option><option value="রাত">রাত (Night)</option></select></div>
+            <div class="input-group"><label>Heat Intensity</label><select id="heatIntensity"><option value="Mild">Mild (মৃদু)</option><option value="Moderate" selected>Moderate (মাঝারি)</option><option value="Strong">Strong (তীব্র)</option></select></div>
+            <div class="input-group"><label>AI Attempt Count</label><select id="heatAiCount"><option value="১ নম্বর" selected>১ নম্বর AI / পাল</option><option value="২ নম্বর">২ নম্বর AI / পাল</option><option value="৩ নম্বর বা ততোধিক">৩ নম্বর বা ততোধিক</option></select></div>
             <div class="input-group"><label>Signs / Symptoms</label><select id="heatSigns"><option value="Standing Heat">Standing Heat</option><option value="Mucus Discharge">Mucus Discharge</option><option value="Restlessness">Restlessness</option><option value="Mounting Others">Mounting Others</option></select></div>
-            <div class="input-group"><label>Exp. AI Date</label><input type="date" id="heatExpAiDate"></div>
-            <div class="input-group"><label>Note</label><input type="text" id="heatNote" placeholder="নোট"></div>
+            <div class="input-group"><label>Current Status</label>
+              <select id="heatStatus">
+                <option value="Pending AI">Pending AI (প্রজননের অপেক্ষমাণ)</option>
+                <option value="AI Done">AI Done (প্রজনন সম্পন্ন)</option>
+                <option value="Conceived / Pregnant">Conceived / Pregnant (গর্ভধারণ নিশ্চিত)</option>
+                <option value="Repeat / Failed">Repeat / Failed (ফেল / পুনরায় হিট)</option>
+              </select>
+            </div>
+            <div class="input-group"><label>Inseminator / Doctor Name</label><input type="text" id="heatDocName" placeholder="ডাক্তার বা টেকনিশিয়ানের নাম"></div>
+            <div class="input-group"><label>Doctor / Tech Mobile</label><input type="text" id="heatDocPhone" placeholder="মোবাইল নম্বর"></div>
+            <div class="input-group"><label>Bull / Semen ID Used</label><input type="text" id="heatBullInfo" placeholder="কোন ষাঁড় বা সিমেনের ব্যাচ"></div>
+            <div class="input-group"><label>Exp. AI Best Time (Auto)</label><input type="date" id="heatExpAiDate"></div>
+            <div class="input-group"><label>Exp. Next Heat Date (Auto)</label><input type="date" id="heatNextDate"></div>
+            <div class="input-group"><label>Note / Remarks</label><input type="text" id="heatNote" placeholder="বিশেষ নোট"></div>
           </div>
-          <div style="display:flex; gap:10px;">
+          <div style="display:flex; gap:10px; margin-top:10px;">
             <button class="btn" id="heatSubmitBtn" onclick="saveHeatRecord()">Save Heat Record</button>
             <button class="btn btn-warning" id="heatCancelBtn" style="display:none;" onclick="cancelHeatEdit()">Cancel</button>
           </div>
         </div>
         <div class="card">
-          <h2>হিট রেকর্ড তালিকা</h2>
+          <h2>হিট ও প্রজনন পর্যবেক্ষণ তালিকা</h2>
           <div class="table-container">
             <table>
-              <thead><tr><th>Tag ID</th><th>Heat Date</th><th>Signs</th><th>Exp. AI Date</th><th>Note</th><th>Action</th></tr></thead>
+              <thead><tr><th>Tag ID</th><th>Heat Date & Time</th><th>AI Count</th><th>Days Gap</th><th>Current Status & Bull</th><th>Next Exp. Heat</th><th>Action</th></tr></thead>
               <tbody id="heatTableBody"></tbody>
             </table>
           </div>
