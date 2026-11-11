@@ -35,7 +35,8 @@ function onDewormTagChange() {
 // অটো ডোজ ক্যালকুলেটর (ওজনের ওপর ভিত্তি করে মিলি বা গ্রাম হিসাব)
 function autoCalcDewormDose() {
   var wt = parseFloat(getEl('dewormWeight').value) || 0;
-  var formType = getEl('dewormFormType') ? getEl('dewormFormType').value : 'Syrup';
+  var formTypeSelect = getEl('dewormFormType');
+  var formType = formTypeSelect ? formTypeSelect.value : 'Syrup';
   var doseField = getEl('dewormCalculatedDose');
   if (!doseField) return;
 
@@ -57,15 +58,18 @@ function autoCalcDewormDose() {
   autoCalcNextDewormDate();
 }
 
-// পরবর্তী ডোজের নির্ধারিত তারিখ (Next Due Date) অটো সেট করা (যেমন: ৯০ দিন বা ৩ মাস পর)
+// পরবর্তী ডোজের নির্ধারিত তারিখ (Next Due Date) অটো সেট করা (৯০ দিন বা ৩ মাস পর)
 function autoCalcNextDewormDate() {
   var dtVal = getEl('dewormDate').value;
   if (!dtVal) return;
 
   var d = new Date(dtVal);
-  d.setDate(d.getDate() + 90); // স্ট্যান্ডার্ড ডিওয়ার্মিং গ্যাপ ৯০ দিন (৩ মাস)
-  if (getEl('dewormNextDate')) {
-    getEl('dewormNextDate').value = d.toISOString().split('T')[0];
+  if (isNaN(d.getTime())) return;
+
+  d.setDate(d.getDate() + 90); // স্ট্যান্ডার্ড ডিওয়ার্মিং গ্যাপ ৯০ দিন
+  var nextDateInput = getEl('dewormNextDate');
+  if (nextDateInput) {
+    nextDateInput.value = d.toISOString().split('T')[0];
   }
 }
 
@@ -102,13 +106,14 @@ function saveDewormingRecord() {
   if (!tag || !dt || !medName) return alert('Tag ID, তারিখ এবং ওষুধের নাম দিন!');
 
   var cost = parseFloat(getEl('dewormCost').value) || 0;
+  var formTypeSelect = getEl('dewormFormType');
 
   var data = {
     tag: tag,
     date: dt,
     weight: parseFloat(getEl('dewormWeight').value) || 0,
     medName: medName,
-    formType: getEl('dewormFormType') ? getEl('dewormFormType'].value : 'Syrup',
+    formType: formTypeSelect ? formTypeSelect.value : 'Syrup',
     dose: getEl('dewormCalculatedDose') ? getEl('dewormCalculatedDose').value : '',
     nextDate: getEl('dewormNextDate') ? getEl('dewormNextDate').value : '',
     cost: cost,
@@ -147,10 +152,9 @@ function renderDewormTable() {
   list.sort(function(a, b) { return (b.data.date || '').localeCompare(a.data.date || ''); });
 
   var todayISO = new Date().toISOString().split('T')[0];
-  var upcomingCount = 0;
 
   if (list.length === 0) {
-    body.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#777;">কোনো কৃমিনাশক রেকর্ড নেই।</td></tr>';
+    body.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#777;">কোনো কৃমিনাশক রেকর্ড নেই।</td></tr>';
     return;
   }
 
@@ -158,8 +162,6 @@ function renderDewormTable() {
   list.forEach(function(item) {
     var k = item.key, d = item.data;
     var isUpcoming = d.nextDate && d.nextDate <= todayISO;
-    if (isUpcoming) upcomingCount++;
-
     var statusBadge = isUpcoming ? '<span class="badge badge-danger">Due Today / Overdue</span>' : '<span class="badge badge-success">Up to Date</span>';
 
     html += '<tr>' +
