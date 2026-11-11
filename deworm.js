@@ -32,7 +32,7 @@ function onDewormTagChange() {
   }
 }
 
-// অটো ডোজ ক্যালকুলেটর (ওজনের ওপর ভিত্তি করে মিলি বা গ্রাম হিসাব)
+// অটো ডোজ ক্যালকুলেটর (অটো আসার পাশাপাশি ম্যানুয়াল এডিটের সুযোগসহ)
 function autoCalcDewormDose() {
   var wt = parseFloat(getEl('dewormWeight').value) || 0;
   var formTypeSelect = getEl('dewormFormType');
@@ -40,6 +40,7 @@ function autoCalcDewormDose() {
   var doseField = getEl('dewormCalculatedDose');
   if (!doseField) return;
 
+  // যদি ইউজার ম্যানুয়ালি কিছু লিখে থাকেন এবং ওজন পরিবর্তন না হয়, তবে ওভাররাইট না করে অটো সেট করা
   var calcResult = '';
   if (wt > 0) {
     if (formType === 'Syrup') {
@@ -52,13 +53,13 @@ function autoCalcDewormDose() {
       calcResult = (wt * 0.1).toFixed(1) + ' mL / Gram';
     }
   } else {
-    calcResult = 'ওজন দিন';
+    calcResult = '';
   }
   doseField.value = calcResult;
   autoCalcNextDewormDate();
 }
 
-// পরবর্তী ডোজের নির্ধারিত তারিখ (Next Due Date) অটো সেট করা (৯০ দিন বা ৩ মাস পর)
+// পরবর্তী ডোজের নির্ধারিত তারিখ (Next Due Date) অটো সেট করা
 function autoCalcNextDewormDate() {
   var dtVal = getEl('dewormDate').value;
   if (!dtVal) return;
@@ -126,7 +127,6 @@ function saveDewormingRecord() {
     } else {
       db.ref('deworm').push(data);
 
-      // খরচ সরাসরি ফার্মের Expenses লেজারে যুক্ত করা
       if (cost > 0) {
         db.ref('expenses').push({
           date: dt,
@@ -141,7 +141,6 @@ function saveDewormingRecord() {
   renderDewormTable();
 }
 
-// আপকামিং ও হিস্ট্রি ফিল্টারসহ রেন্ডার টেবিল
 function renderDewormTable() {
   var body = getEl('dewormTableBody');
   if (!body) return;
