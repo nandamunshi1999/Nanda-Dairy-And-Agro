@@ -312,10 +312,44 @@
         </div>
       </div>
 
-      <!-- ৭. Deworming Tab -->
+     <!-- ৭. Deworming Tab -->
       <div id="tab-deworm" class="tab-content" style="display: none;">
         <div class="card">
-          <h2>Deworming Register</h2>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h2 style="margin:0; border:none; padding:0;">💊 Advanced Deworming Register & Auto Dose Calculator</h2>
+            <button class="action-btn btn-info" onclick="switchTab('dashboard', document.querySelector('nav button'))">⬅ Back (ফিরে যান)</button>
+          </div>
+          <div class="form-grid">
+            <div class="input-group"><label>Cattle / Calf Tag ID *</label><input type="text" id="dewormCowTag" list="cattleTagList" onchange="onDewormTagChange()" placeholder="NDA-001"></div>
+            <div class="input-group"><label>Body Weight (kg)</label><input type="number" id="dewormWeight" oninput="autoCalcDewormDose()" placeholder="৪৫০"></div>
+            <div class="input-group"><label>Deworming Date *</label><input type="date" id="dewormDate" onchange="autoCalcNextDewormDate()"></div>
+            <div class="input-group"><label>Medicine Brand / Name *</label><input type="text" id="dewormMedName" placeholder="Albendazole / Ivermectin"></div>
+            <div class="input-group"><label>Formulation Type</label>
+              <select id="dewormFormType" onchange="autoCalcDewormDose()">
+                <option value="Syrup">Syrup / Suspension</option>
+                <option value="Bolus / Tablet">Bolus / Tablet</option>
+                <option value="Injection">Injection (Pour-on/Injectable)</option>
+              </select>
+            </div>
+            <div class="input-group"><label>Calculated Dose (Auto)</label><input type="text" id="dewormCalculatedDose" readonly style="background:#e8f5e9; color:#1b5e20; font-weight:bold;"></div>
+            <div class="input-group"><label>Next Due Date (Auto)</label><input type="date" id="dewormNextDate"></div>
+            <div class="input-group"><label>Cost ₹</label><input type="number" id="dewormCost" placeholder="₹"></div>
+            <div class="input-group"><label>Remarks / Special Notes</label><input type="text" id="dewormNote" placeholder="বিশেষ নোট বা নির্দেশনা"></div>
+          </div>
+          <div style="display:flex; gap:10px; margin-top:10px;">
+            <button class="btn" id="dewormSubmitBtn" onclick="saveDewormingRecord()">Save Deworming Record</button>
+            <button class="btn btn-warning" id="dewormCancelBtn" style="display:none;" onclick="cancelDewormEdit()">Cancel</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>কৃমিনাশক ইতিহাস ও আপকামিং শিডিউল তালিকা</h2>
+          <div class="table-container">
+            <table>
+              <thead><tr><th>Tag ID</th><th>Date & Weight</th><th>Medicine & Auto Dose</th><th>Next Due Date & Status</th><th>Cost</th><th>Remarks</th><th>Action</th></tr></thead>
+              <tbody id="dewormTableBody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
