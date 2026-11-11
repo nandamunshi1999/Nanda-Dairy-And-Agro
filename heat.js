@@ -2,24 +2,36 @@
 // NANDA DAIRY & AGRO - ADVANCED HEAT REGISTER MODULE
 // ==========================================
 
-var eHeatKey = null;
+function onHeatInputTypeChange() {
+  var sel = getEl('heatAiCountSelect');
+  var txt = getEl('heatAiCountInput');
+  if (sel && txt) {
+    if (sel.value === 'Custom') {
+      txt.style.display = 'block';
+      txt.focus();
+    } else {
+      txt.style.display = 'none';
+      txt.value = sel.value;
+    }
+  }
+}
 
-// হিটের তারিখ ও সময় থেকে সেরা AI সময় (১২-১৮ ঘণ্টা) এবং পরবর্তী হিট (২১ দিন) অটো হিসাব করা
+// হিটের তারিখ ও সময় থেকে সেরা AI সময় (১২-১৮ ঘণ্টা) এবং পরবর্তী হিট (২১ দিন) টাইমসহ অটো হিসাব করা
 function autoCalcHeatSchedule() {
   var hDate = getEl('heatDate').value;
   if (!hDate) return;
 
   var d = new Date(hDate);
   
-  // সেরা AI সময় (১২ থেকে ১৮ ঘণ্টা পর, অর্থাৎ একই দিনে বা পরের দিনে)
-  var expAiTime = new Date(d);
-  expAiTime.setHours(expAiTime.getHours() + 15); // গড়ে ১৫ ঘণ্টা
-  getEl('heatExpAiDate').value = expAiTime.toISOString().split('T')[0];
+  // সেরা AI সময় (১২ থেকে ১৮ ঘণ্টা পর, অর্থাৎ ১৫ ঘণ্টা যোগ করা)
+  var expAiTime = new Date(d.getTime() + (15 * 60 * 60 * 1000));
+  var aiFormatted = expAiTime.toISOString().slice(0, 16); // YYYY-MM-DDTHH:mm format for datetime-local
+  if(getEl('heatExpAiDate')) getEl('heatExpAiDate').value = aiFormatted;
 
-  // পরবর্তী সম্ভাব্য হিট (২১ দিন পর)
-  var nextHeat = new Date(d);
-  nextHeat.setDate(nextHeat.getDate() + 21);
-  if (getEl('heatNextDate')) getEl('heatNextDate').value = nextHeat.toISOString().split('T')[0];
+  // পরবর্তী সম্ভাব্য হিট (২১ দিন পর, একই সময়ে)
+  var nextHeat = new Date(d.getTime() + (21 * 24 * 60 * 60 * 1000));
+  var nextFormatted = nextHeat.toISOString().slice(0, 16);
+  if(getEl('heatNextDate')) getEl('heatNextDate').value = nextFormatted;
 
   calcDaysGapAndRepeatWarning();
 }
@@ -60,13 +72,30 @@ function calcDaysGapAndRepeatWarning() {
   }
 }
 
+var eHeatKey = null;
+
 function editHeatRecord(k) {
   var d = farmStore.heat ? farmStore.heat[k] : null; if (!d) return; eHeatKey = k;
   getEl('heatCowTag').value = d.tag || '';
   getEl('heatDate').value = d.date || '';
   if(getEl('heatTimeSession')) getEl('heatTimeSession').value = d.timeSession || 'সকাল';
   if(getEl('heatIntensity')) getEl('heatIntensity').value = d.intensity || 'Moderate';
-  if(getEl('heatAiCount')) getEl('heatAiCount').value = d.aiCount || '১ নম্বর';
+  
+  // AI Count Set
+  var sel = getEl('heatAiCountSelect');
+  var txt = getEl('heatAiCountInput');
+  if (sel && txt) {
+    if (d.aiCount === '1st Time' || d.aiCount === '2nd Time' || d.aiCount === '3rd Time') {
+      sel.value = d.aiCount;
+      txt.style.display = 'none';
+      txt.value = d.aiCount;
+    } else {
+      sel.value = 'Custom';
+      txt.style.display = 'block';
+      txt.value = d.aiCount || '';
+    }
+  }
+
   getEl('heatSigns').value = d.signs || 'Standing Heat';
   getEl('heatExpAiDate').value = d.expAiDate || '';
   if(getEl('heatNextDate')) getEl('heatNextDate').value = d.nextDate || '';
@@ -84,7 +113,8 @@ function editHeatRecord(k) {
 
 function cancelHeatEdit() {
   eHeatKey = null;
-  ['heatCowTag','heatDate','heatExpAiDate','heatNextDate','heatDocName','heatDocPhone','heatBullInfo','heatNote'].forEach(function(id){ if(getEl(id)) getEl(id).value=''; });
+  ['heatCowTag','heatDate','heatExpAiDate','heatNextDate','heatDocName','heatDocPhone','heatBullInfo','heatNote','heatAiCountInput'].forEach(function(id){ if(getEl(id)) getEl(id).value=''; });
+  if(getEl('heatAiCountSelect')) getEl('heatAiCountSelect').value = '1st Time';
   getEl('heatSubmitBtn').innerText = 'Save Heat Record';
   getEl('heatCancelBtn').style.display = 'none';
   var warnBox = getEl('heatRepeatWarningBox'); if(warnBox) warnBox.innerHTML = '';
@@ -95,6 +125,7 @@ function saveHeatRecord() {
   var hDate = getEl('heatDate').value;
   if (!tag || !hDate) return alert('Cattle Tag ID এবং Heat Date দিন!');
 
+  var aiCountVal = (getEl('heatAiCountSelect').value === 'Custom') ? (getEl('heatAiCountInput').value || '1st Time') : getEl('heatAiCountSelect').value;
   var statusVal = getEl('heatStatus') ? getEl('heatStatus').value : 'Pending AI';
 
   var data = {
@@ -102,7 +133,7 @@ function saveHeatRecord() {
     date: hDate,
     timeSession: getEl('heatTimeSession') ? getEl('heatTimeSession').value : 'সকাল',
     intensity: getEl('heatIntensity') ? getEl('heatIntensity').value : 'Moderate',
-    aiCount: getEl('heatAiCount') ? getEl('heatAiCount').value : '১ নম্বর',
+    aiCount: aiCountVal,
     signs: getEl('heatSigns').value,
     expAiDate: getEl('heatExpAiDate').value,
     nextDate: getEl('heatNextDate') ? getEl('heatNextDate').value : '',
@@ -120,7 +151,6 @@ function saveHeatRecord() {
       db.ref('heat').push(data);
     }
 
-    // যদি স্ট্যাটাস "Conceived / Pregnant" হয়, তবে সরাসরি Breeding মডিউলে রেকর্ড শিফট বা সেভ হয়ে যাবে
     if (statusVal === 'Conceived / Pregnant') {
       db.ref('breeding').push({
         tag: tag,
@@ -128,7 +158,7 @@ function saveHeatRecord() {
         semenId: data.bullInfo || 'Unknown Bull',
         company: 'Auto from Heat Register',
         aiCost: 0,
-        pdDate: new Date(Date.now() + 60*24*60*60*1000).toISOString().split('T')[0], // ৬০ দিন পর পিডি ডেট
+        pdDate: new Date(Date.now() + 60*24*60*60*1000).toISOString().split('T')[0],
         status: 'Pregnant',
         expCalvingDate: new Date(new Date(hDate).getTime() + 280*24*60*60*1000).toISOString().split('T')[0],
         actCalvingDate: ''
@@ -160,7 +190,6 @@ function renderHeatTable() {
     var k = item.key, d = item.data;
     var badgeClass = d.status === 'Conceived / Pregnant' ? 'badge-success' : (d.status === 'Repeat / Failed' ? 'badge-danger' : 'badge-warning');
     
-    // দিনের ব্যবধান হিসাব (Days Gap)
     var daysGapTxt = '-';
     var prevDate = null;
     for (var otherK in farmStore.heat) {
@@ -177,14 +206,14 @@ function renderHeatTable() {
 
     html += '<tr>' +
       '<td><strong>' + (d.tag || '-') + '</strong></td>' +
-      '<td>' + formatDateBR(d.date) + ' (' + (d.timeSession || 'সকাল') + ')<br><small style="color:#555;">তীব্রতা: ' + (d.intensity || 'Moderate') + '</small></td>' +
-      '<td>' + (d.aiCount || '১ নম্বর') + '</td>' +
+      '<td>' + d.date + ' (' + (d.timeSession || 'সকাল') + ')<br><small style="color:#555;">তীব্রতা: ' + (d.intensity || 'Moderate') + '</small></td>' +
+      '<td>' + (d.aiCount || '1st Time') + '</td>' +
       '<td style="font-weight:bold; color:#1b5e20;">' + daysGapTxt + '</td>' +
       '<td><span class="badge ' + badgeClass + '">' + (d.status || 'Pending AI') + '</span><br><small>বুল: ' + (d.bullInfo || '-') + '</small></td>' +
-      '<td style="color:red; font-weight:bold;">' + formatDateBR(d.nextDate) + '</td>' +
+      '<td style="color:red; font-weight:bold;">' + (d.nextDate ? d.nextDate.replace('T', ' সময়: ') : '-') + '</td>' +
       '<td>' +
-        '<button class="action-btn btn-info" onclick="editHeatRecord(\'' + k + '\')">Edit</button>' +
-        '<button class="action-btn btn-danger" onclick="deleteRecord(\'heat\',\'' + k + '\')">Delete</button>' +
+        '<button class="action-btn btn-info" onclick="editHeatRecord(\'' + k + \'')">Edit</button>' +
+        '<button class="action-btn btn-danger" onclick="deleteRecord(\'heat\',\'' + k + \'')">Delete</button>' +
       '</td>' +
     '</tr>';
   });
