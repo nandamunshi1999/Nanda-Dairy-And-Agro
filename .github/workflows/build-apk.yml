@@ -26,6 +26,9 @@ jobs:
 
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
+      with:
+        platforms: 'platforms;android-33'
+        build-tools: 'build-tools;33.0.2'
 
     - name: Install Bubblewrap CLI
       run: npm install -g @bubblewrap/cli
@@ -68,4 +71,3 @@ jobs:
       with:
         name: nanda-dairy-apk
         path: app-release-signed.apk
-        
