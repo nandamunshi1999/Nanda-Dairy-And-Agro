@@ -52,6 +52,7 @@ jobs:
           "generatorApp": "bubblewrap-cli",
           "webManifestUrl": "https://nandamunshi1999.github.io/Nanda-Dairy-And-Agro/manifest.json",
           "fallbackType": "customtab",
+          "jdkPath": "/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.21-9/x64",
           "signingKey": {
             "path": "android.keystore",
             "alias": "android"
@@ -64,7 +65,7 @@ jobs:
 
     - name: Build TWA APK
       run: |
-        printf "n\n%s\n" "$JAVA_HOME" | bubblewrap build --manifest twa-manifest.json --skipKeytool
+        bubblewrap build --manifest twa-manifest.json --skipKeytool
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
