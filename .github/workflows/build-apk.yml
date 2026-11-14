@@ -33,9 +33,9 @@ jobs:
     - name: Install Bubblewrap CLI
       run: npm install -g @bubblewrap/cli
 
-    - name: Create TWA Manifest File with Paths
+    - name: Create TWA Manifest File
       run: |
-        cat << EOF > twa-manifest.json
+        cat << 'EOF' > twa-manifest.json
         {
           "packageId": "com.nandadairy.agro.twa",
           "host": "nandamunshi1999.github.io",
@@ -52,8 +52,6 @@ jobs:
           "generatorApp": "bubblewrap-cli",
           "webManifestUrl": "https://nandamunshi1999.github.io/Nanda-Dairy-And-Agro/manifest.json",
           "fallbackType": "customtab",
-          "jdkPath": "$JAVA_HOME",
-          "androidSdkPath": "/usr/local/lib/android/sdk",
           "signingKey": {
             "path": "android.keystore",
             "alias": "android"
@@ -64,13 +62,24 @@ jobs:
         }
         EOF
 
-    - name: Build TWA APK Non-interactively
+    - name: Build TWA APK Automatically
       run: |
-        bubblewrap build --manifest twa-manifest.json --skipKeytool
+        node -e '
+          const { spawn } = require("child_process");
+          const child = spawn("bubblewrap", ["build", "--manifest", "twa-manifest.json", "--skipKeytool"], { stdio: ["pipe", "inherit", "inherit"] });
+          setTimeout(() => {
+            child.stdin.write("n\n");
+            setTimeout(() => {
+              child.stdin.write(process.env.JAVA_HOME + "\n");
+            }, 1500);
+          }, 2000);
+          child.on("close", (code) => {
+            process.exit(code);
+          });
+        '
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: nanda-dairy-apk
         path: app-release-signed.apk
-        
