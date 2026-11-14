@@ -33,9 +33,9 @@ jobs:
     - name: Install Bubblewrap CLI
       run: npm install -g @bubblewrap/cli
 
-    - name: Create TWA Manifest File
+    - name: Create TWA Manifest File with Paths
       run: |
-        cat << 'EOF' > twa-manifest.json
+        cat << EOF > twa-manifest.json
         {
           "packageId": "com.nandadairy.agro.twa",
           "host": "nandamunshi1999.github.io",
@@ -52,6 +52,8 @@ jobs:
           "generatorApp": "bubblewrap-cli",
           "webManifestUrl": "https://nandamunshi1999.github.io/Nanda-Dairy-And-Agro/manifest.json",
           "fallbackType": "customtab",
+          "jdkPath": "$JAVA_HOME",
+          "androidSdkPath": "/usr/local/lib/android/sdk",
           "signingKey": {
             "path": "android.keystore",
             "alias": "android"
@@ -64,9 +66,7 @@ jobs:
 
     - name: Build TWA APK Non-interactively
       run: |
-        export JAVA_HOME="$JAVA_HOME"
-        export ANDROID_HOME="$ANDROID_HOME"
-        printf "n\n%s\n" "$JAVA_HOME" | bubblewrap build --manifest twa-manifest.json --skipKeytool
+        bubblewrap build --manifest twa-manifest.json --skipKeytool
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
