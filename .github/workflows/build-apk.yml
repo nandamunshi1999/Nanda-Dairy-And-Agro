@@ -66,7 +66,7 @@ jobs:
       run: |
         export JAVA_HOME="$JAVA_HOME"
         export ANDROID_HOME="$ANDROID_HOME"
-        bubblewrap build --manifest twa-manifest.json --skipKeytool
+        echo "n" | bubblewrap build --manifest twa-manifest.json --skipKeytool
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
