@@ -21,7 +21,7 @@ function onVaccineTagChange() {
   if (cow && (cow.status === 'Pregnant' || (cow.status || '').toLowerCase() === 'pregnant')) {
     alertBox.innerHTML = '<div style="background:#ffebee; color:#c62828; padding:10px; border-radius:8px; border:1px solid #ef9a9a; margin-bottom:12px; font-weight:bold;">⚠️ সতর্কবার্তা (Pregnancy Warning): নির্বাচিত গাভীটি গর্ভবতী (Pregnant)! লাইভ বা অ্যাটেনুয়েটেড ভ্যাকসিন দেওয়ার পূর্বে ভেটেরিনারি চিকিৎসকের পরামর্শ নিন।</div>';
   } else {
-    alertBox.innerHTML = '<div style="background:#e8f5e9; color:#2e7d32; padding:8px; border-radius:6px; margin-bottom:12px; font-size:12.5px;">✔ গাভীর স্বাস্থ্যগত অবস্থা স্বাভাবিক রয়েছে। টিকাদানের জন্য উপযোগী।</div>';
+    alertBox.innerHTML = '<div style="background:#e8f5e9; color:#2e7d32; padding:8px; border-radius:6px; margin-bottom:12px; font-size:12.5px;">✔ গাভীর স্বাস্থ্য স্বাভাবিক রয়েছে। টিকাদানের জন্য উপযোগী।</div>';
   }
 }
 
@@ -30,7 +30,6 @@ function onVaccineTypeSelect() {
   var vacName = getEl('vacName').value;
   var dtVal = getEl('vacDate').value;
   
-  // অটো ডোজ এবং রুট সাজেস্ট করা
   if (vacName.includes('FMD')) {
     if(getEl('vacDose')) getEl('vacDose').value = '5.0';
     if(getEl('vacRoute')) getEl('vacRoute').value = 'Subcutaneous (S/C)';
@@ -39,13 +38,10 @@ function onVaccineTypeSelect() {
     if(getEl('vacRoute')) getEl('vacRoute').value = 'Intramuscular (I/M)';
   }
 
-  // বুস্টার ডোজ বা পরবর্তী ডোজ অটো ক্যালকুলেশন (যেমন: ২৮ দিন পর)
   if (dtVal) {
     var d = new Date(dtVal);
-    d.setDate(d.getDate() + 28); // আদর্শ বুস্টার গ্যাপ ২৮ দিন
+    d.setDate(d.getDate() + 28);
     getEl('vacNextDate').value = d.toISOString().split('T')[0];
-    
-    // উইথড্রয়াল পিরিয়ড অটো সেট (যেমন: ৭ দিন মিল্ক উইথড্রয়াল)
     if(getEl('vacWithdrawalDays')) getEl('vacWithdrawalDays').value = '7';
   }
 }
@@ -106,7 +102,6 @@ function saveVaccineRecord() {
     } else {
       db.ref('vaccine').push(data);
 
-      // ৩. খরচ সরাসরি ফার্মের Expenses লেজারে যুক্ত করা
       if (cost > 0) {
         db.ref('expenses').push({
           date: dt,
@@ -121,12 +116,59 @@ function saveVaccineRecord() {
   renderVaccineTable();
 }
 
-// ৫. ডিজিটাল হেলথ পাসপোর্ট ও পাসবুক প্রিন্ট জেনারেটর
+// নির্দিষ্ট গরুর সমস্ত ভ্যাকসিনের বিস্তারিত দেখার জন্য পপ-আপ মোডাল
+window.showCowVaccineDetails = function(encTag) {
+  var tag = decodeURIComponent(encTag).trim();
+  var cow = farmStore.cattle ? farmStore.cattle[tag] : null;
+  
+  var html = '<div style="font-family:sans-serif; padding:10px;">';
+  html += '<div style="text-align:center; border-bottom:2px solid #1b5e20; padding-bottom:8px; margin-bottom:12px;">';
+  html += '<h3 style="color:#1b5e20; margin:0;">Cattle Vaccination Details</h3>';
+  html += '<p style="font-size:13px; font-weight:bold; margin:3px 0;">Tag ID: ' + tag + ' | Breed: ' + (cow ? cow.breed : 'N/A') + '</p>';
+  html += '</div>';
+
+  html += '<table style="width:100%; border-collapse:collapse; font-size:12px;">';
+  html += '<tr style="background:#e8f5e9;"><th style="border:1px solid #c8e6c9; padding:6px;">তারিখ</th><th style="border:1px solid #c8e6c9; padding:6px;">ভ্যাকসিনের নাম ও ব্যাচ</th><th style="border:1px solid #c8e6c9; padding:6px;">ডোজ ও রুট</th><th style="border:1px solid #c8e6c9; padding:6px;">পরবর্তী ডোজ</th><th style="border:1px solid #c8e6c9; padding:6px;">খরচ</th><th style="border:1px solid #c8e6c9; padding:6px;">একশন</th></tr>';
+
+  var count = 0;
+  for (var k in farmStore.vaccine) {
+    var v = farmStore.vaccine[k];
+    if (v && (v.tag || '').trim().toLowerCase() === tag.toLowerCase()) {
+      count++;
+      html += '<tr>';
+      html += '<td style="border:1px solid #c8e6c9; padding:6px;">' + formatDateBR(v.date) + '</td>';
+      html += '<td style="border:1px solid #c8e6c9; padding:6px;"><strong>' + v.name + '</strong><br><small>ব্যাচ: ' + (v.batchNo || '-') + '</small></td>';
+      html += '<td style="border:1px solid #c8e6c9; padding:6px;">' + (v.dose || 5) + ' mL<br><small>' + (v.route || 'S/C') + '</small></td>';
+      html += '<td style="border:1px solid #c8e6c9; padding:6px; color:red;">' + formatDateBR(v.nextDate) + '</td>';
+      html += '<td style="border:1px solid #c8e6c9; padding:6px;">₹ ' + (v.cost || 0) + '</td>';
+      html += '<td style="border:1px solid #c8e6c9; padding:6px; text-align:center;">';
+      html += '<button class="action-btn btn-info" style="padding:2px 5px; font-size:10px;" onclick="editVaccineRecord(\'' + k + '\'); document.getElementById(\'cowVaccineDetailModal\').style.display=\'none\';">Edit</button> ';
+      html += '<button class="action-btn btn-danger" style="padding:2px 5px; font-size:10px;" onclick="deleteRecord(\'vaccine\',\'' + k + '\'); document.getElementById(\'cowVaccineDetailModal\').style.display=\'none\';">Del</button>';
+      html += '</td>';
+      html += '</tr>';
+    }
+  }
+  html += '</table>';
+  html += '</div>';
+
+  var modal = getEl('cowVaccineDetailModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'cowVaccineDetailModal';
+    modal.style.cssText = "display:flex; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:3000; align-items:center; justify-content:center; padding:15px;";
+    modal.innerHTML = '<div style="background:white; max-width:750px; width:100%; border-radius:12px; padding:25px; max-height:90vh; overflow-y:auto;"><div id="cowVaccineDetailContent"></div><div style="text-align:right; margin-top:15px;"><button class="btn btn-danger" onclick="document.getElementById(\'cowVaccineDetailModal\').style.display=\'none\'">বন্ধ করুন</button></div></div>';
+    document.body.appendChild(modal);
+  }
+  getEl('cowVaccineDetailContent').innerHTML = html;
+  modal.style.display = 'flex';
+};
+
+// ডিজিটাল হেলথ পাসপোর্ট
 window.showDigitalHealthPassport = function(encTag) {
   var tag = decodeURIComponent(encTag).trim();
   var cow = farmStore.cattle ? farmStore.cattle[tag] : null;
   
-  var historyHtml = '<div style="font-family:sans-serif; padding:15px;" id="passportPrintArea">';
+  var historyHtml = '<div style="font-family:sans-serif; padding:15px;">';
   historyHtml += '<div style="text-align:center; border-bottom:2px solid #1b5e20; padding-bottom:10px; margin-bottom:15px;">';
   historyHtml += '<h2 style="color:#1b5e20; margin:0;">NANDA DAIRY & AGRO</h2>';
   historyHtml += '<p style="font-size:13px; font-weight:bold; margin:3px 0;">Digital Health Passport & Vaccination Passbook</p>';
@@ -141,11 +183,9 @@ window.showDigitalHealthPassport = function(encTag) {
   historyHtml += '<table style="width:100%; border-collapse:collapse; font-size:12px; margin-top:8px;">';
   historyHtml += '<tr style="background:#e8f5e9;"><th style="border:1px solid #c8e6c9; padding:6px;">তারিখ</th><th style="border:1px solid #c8e6c9; padding:6px;">ভ্যাকসিনের নাম</th><th style="border:1px solid #c8e6c9; padding:6px;">ডোজ ও রুট</th><th style="border:1px solid #c8e6c9; padding:6px;">ব্যাচ ও মেয়াদ</th><th style="border:1px solid #c8e6c9; padding:6px;">পরবর্তী ডোজ</th></tr>';
 
-  var count = 0;
   for (var k in farmStore.vaccine) {
     var v = farmStore.vaccine[k];
     if (v && (v.tag || '').trim().toLowerCase() === tag.toLowerCase()) {
-      count++;
       historyHtml += '<tr>';
       historyHtml += '<td style="border:1px solid #c8e6c9; padding:6px;">' + formatDateBR(v.date) + '</td>';
       historyHtml += '<td style="border:1px solid #c8e6c9; padding:6px;"><strong>' + v.name + '</strong></td>';
@@ -155,15 +195,10 @@ window.showDigitalHealthPassport = function(encTag) {
       historyHtml += '</tr>';
     }
   }
-
-  if (count === 0) {
-    historyHtml += '<tr><td colspan="5" style="text-align:center; padding:10px; color:#777;">কোনো টিকা রেকর্ড পাওয়া যায়নি।</td></tr>';
-  }
   historyHtml += '</table>';
   historyHtml += '<div style="margin-top:30px; text-align:right; font-size:12px;"><p>Authorized Signatory</p><p><strong>Nanda Dairy & Agro</strong></p></div>';
   historyHtml += '</div>';
 
-  // মোডাল তৈরি বা পপআপ দেখানো
   var modal = getEl('digitalPassportModal');
   if (!modal) {
     modal = document.createElement('div');
@@ -176,68 +211,45 @@ window.showDigitalHealthPassport = function(encTag) {
   modal.style.display = 'flex';
 };
 
-// ১. ড্যাশবোর্ড স্মার্ট অ্যালার্ট সিস্টেম
-function checkDueVaccinationsAlert() {
-  var todayISO = new Date().toISOString().split('T')[0];
-  var dueList = [];
-
-  for (var k in farmStore.vaccine) {
-    var v = farmStore.vaccine[k];
-    if (v && v.nextDate && v.nextDate <= todayISO) {
-      dueList.push(v);
-    }
-  }
-
-  if (dueList.length > 0) {
-    var alertBanner = getEl('dashVaccineAlertBanner');
-    if (!alertBanner) {
-      alertBanner = document.createElement('div');
-      alertBanner.id = 'dashVaccineAlertBanner';
-      alertBanner.style.cssText = "background:#fff3e0; border-left:5px solid #e65100; padding:12px 18px; border-radius:8px; margin-bottom:18px; font-size:13.5px;";
-      var dashTab = getEl('tab-dashboard');
-      if (dashTab) dashTab.insertBefore(alertBanner, dashTab.firstChild);
-    }
-    var html = '<strong style="color:#e65100; font-size:14px;">🔔 স্মার্ট অ্যালার্ট: আজ বা তার পূর্বে টিকাদানের সময় হয়েছে এমন ' + dueList.length + 'টি শিডিউল বাকি রয়েছে!</strong><ul style="margin:5px 0 0 20px; font-size:12.5px;">';
-    dueList.slice(0, 3).forEach(function(item) {
-      html += '<li>ট্যাগ ID: <strong>' + item.tag + '</strong> — টিকা: ' + item.name + ' (নির্ধারিত তারিখ: ' + formatDateBR(item.nextDate) + ')</li>';
-    });
-    html += '</ul>';
-    alertBanner.innerHTML = html;
-  }
-}
-
 function renderVaccineTable() {
   var body = getEl('vaccineTableBody');
   if (!body) return;
-  var list = [];
+  
+  // একই গরুর একাধিক এন্ট্রি এক জায়গায় গ্রুপিং করার লজিক
+  var cowMap = {};
   for (var k in farmStore.vaccine) {
-    list.push({ key: k, data: farmStore.vaccine[k] });
+    var v = farmStore.vaccine[k];
+    if (v && v.tag) {
+      var tKey = v.tag.trim().toLowerCase();
+      if (!cowMap[tKey]) {
+        cowMap[tKey] = { tag: v.tag, records: [], totalCost: 0 };
+      }
+      cowMap[tKey].records.push({ key: k, data: v });
+      cowMap[tKey].totalCost += (parseFloat(v.cost) || 0);
+    }
   }
-  list.sort(function(a, b) { return (b.data.date || '').localeCompare(a.data.date || ''); });
+
+  var list = [];
+  for (var tKey in cowMap) {
+    list.push(cowMap[tKey]);
+  }
 
   if (list.length === 0) {
-    body.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#777;">কোনো টিকা রেকর্ড নেই।</td></tr>';
-    checkDueVaccinationsAlert();
+    body.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#777;">কোনো টিকা রেকর্ড নেই।</td></tr>';
     return;
   }
 
   var html = '';
   list.forEach(function(item) {
-    var k = item.key, d = item.data;
+    var encodedTag = encodeURIComponent(item.tag);
+    var totalEntries = item.records.length;
+
     html += '<tr>' +
-      '<td><strong>' + (d.tag || '-') + '</strong></td>' +
-      '<td>' + (d.name || '-') + '<br><small style="color:#555;">ব্যাচ: ' + (d.batchNo || '-') + '</small></td>' +
-      '<td>' + (d.dose || 5) + ' mL<br><small style="color:#0288d1;">' + (d.route || 'S/C') + '</small></td>' +
-      '<td>' + formatDateBR(d.date) + '</td>' +
-      '<td style="color:red; font-weight:bold;">' + formatDateBR(d.nextDate) + '</td>' +
-      '<td>₹ ' + (d.cost || 0) + '</td>' +
-      '<td><button class="action-btn" style="background:#455a64; color:white; padding:3px 7px; font-size:11px;" onclick="showDigitalHealthPassport(\'' + encodeURIComponent(d.tag) + '\')"> পাসবুক</button></td>' +
-      '<td>' +
-        '<button class="action-btn btn-info" onclick="editVaccineRecord(\'' + k + '\')">Edit</button>' +
-        '<button class="action-btn btn-danger" onclick="deleteRecord(\'vaccine\',\'' + k + '\')">Delete</button>' +
-      '</td>' +
+      '<td><strong>' + item.tag + '</strong></td>' +
+      '<td><span class="badge badge-success" style="cursor:pointer;" onclick="showCowVaccineDetails(\'' + encodedTag + '\')">📂 বিস্তারিত দেখুন (' + totalEntries + 'টি এন্ট্রি)</span></td>' +
+      '<td>₹ ' + item.totalCost + '</td>' +
+      '<td><button class="action-btn" style="background:#455a64; color:white; padding:4px 8px; font-size:11px;" onclick="showDigitalHealthPassport(\'' + encodedTag + '\')">📇 হেলথ পাসপোর্ট</button></td>' +
     '</tr>';
   });
   body.innerHTML = html;
-  checkDueVaccinationsAlert();
 }
