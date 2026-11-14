@@ -116,88 +116,20 @@ function saveVaccineRecord() {
   renderVaccineTable();
 }
 
-// নির্দিষ্ট একটি টিকার সম্পূর্ণ বিস্তারিত দেখার জন্য পপ-আপ মোডাল
-window.showSingleVaccineDetails = function(k) {
-  var v = farmStore.vaccine ? farmStore.vaccine[k] : null;
-  if (!v) return;
-
-  var html = '<div style="font-family:sans-serif; padding:15px;">';
-  html += '<div style="text-align:center; border-bottom:2px solid #1b5e20; padding-bottom:8px; margin-bottom:12px;">';
-  html += '<h3 style="color:#1b5e20; margin:0;">Vaccine Record Details</h3>';
-  html += '<p style="font-size:13px; font-weight:bold; margin:3px 0;">Cattle Tag ID: ' + (v.tag || '-') + '</p>';
-  html += '</div>';
-
-  html += '<div style="font-size:13.5px; line-height:2.0;">';
-  html += '• <strong>ভ্যাকসিনের নাম:</strong> ' + (v.name || '-') + '<br>';
-  html += '• <strong>প্রয়োগের তারিখ:</strong> ' + formatDateBR(v.date) + '<br>';
-  html += '• <strong>পরবর্তী ডোজ (Booster):</strong> ' + formatDateBR(v.nextDate) + '<br>';
-  html += '• <strong>ডোজের পরিমাণ:</strong> ' + (v.dose || 5) + ' mL<br>';
-  html += '• <strong>ইনজেকশন রুট:</strong> ' + (v.route || '-') + '<br>';
-  html += '• <strong>ব্যাচ নম্বর:</strong> ' + (v.batchNo || '-') + '<br>';
-  html += '• <strong>মেয়াদোত্তীর্ণের তারিখ (Expiry):</strong> ' + formatDateBR(v.expiry) + '<br>';
-  html += '• <strong>দুধের উইথড্রয়াল পিরিয়ড:</strong> ' + (v.withdrawalDays || 0) + ' দিন<br>';
-  html += '• <strong>মোট খরচ:</strong> ₹ ' + (v.cost || 0) + '<br>';
-  html += '</div>';
-  html += '</div>';
-
-  var modal = getEl('singleVaccineDetailModal');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.id = 'singleVaccineDetailModal';
-    modal.style.cssText = "display:flex; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:3000; align-items:center; justify-content:center; padding:15px;";
-    modal.innerHTML = '<div style="background:white; max-width:500px; width:100%; border-radius:12px; padding:25px;"><div id="singleVaccineDetailContent"></div><div style="text-align:right; margin-top:20px;"><button class="btn btn-danger" onclick="document.getElementById(\'singleVaccineDetailModal\').style.display=\'none\'">বন্ধ করুন</button></div></div>';
-    document.body.appendChild(modal);
-  }
-  getEl('singleVaccineDetailContent').innerHTML = html;
-  modal.style.display = 'flex';
+// ডিজিটাল হেলথ পাসপোর্ট ডাউনলোড ফাংশন
+window.downloadHealthPassport = function(tag) {
+  var content = getEl('passportContent').innerHTML;
+  var blob = new Blob(['<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Health Passport - ' + tag + '</title></head><body style="font-family:sans-serif; padding:20px;">' + content + '</body></html>'], {type: 'text/html'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'Health_Passport_' + tag + '.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 };
 
-// নির্দিষ্ট গরুর সমস্ত ভ্যাকসিনের বিস্তারিত দেখার জন্য পপ-আপ মোডাল (গ্রুপিং ভিউয়ের জন্য)
-window.showCowVaccineDetails = function(encTag) {
-  var tag = decodeURIComponent(encTag).trim();
-  var cow = farmStore.cattle ? farmStore.cattle[tag] : null;
-  
-  var html = '<div style="font-family:sans-serif; padding:10px;">';
-  html += '<div style="text-align:center; border-bottom:2px solid #1b5e20; padding-bottom:8px; margin-bottom:12px;">';
-  html += '<h3 style="color:#1b5e20; margin:0;">Cattle Vaccination Details</h3>';
-  html += '<p style="font-size:13px; font-weight:bold; margin:3px 0;">Tag ID: ' + tag + ' | Breed: ' + (cow ? cow.breed : 'N/A') + '</p>';
-  html += '</div>';
-
-  html += '<table style="width:100%; border-collapse:collapse; font-size:12px;">';
-  html += '<tr style="background:#e8f5e9;"><th style="border:1px solid #c8e6c9; padding:6px;">তারিখ</th><th style="border:1px solid #c8e6c9; padding:6px;">ভ্যাকসিনের নাম ও ব্যাচ</th><th style="border:1px solid #c8e6c9; padding:6px;">ডোজ ও রুট</th><th style="border:1px solid #c8e6c9; padding:6px;">পরবর্তী ডোজ</th><th style="border:1px solid #c8e6c9; padding:6px;">খরচ</th><th style="border:1px solid #c8e6c9; padding:6px;">একশন</th></tr>';
-
-  for (var k in farmStore.vaccine) {
-    var v = farmStore.vaccine[k];
-    if (v && (v.tag || '').trim().toLowerCase() === tag.toLowerCase()) {
-      html += '<tr>';
-      html += '<td style="border:1px solid #c8e6c9; padding:6px;">' + formatDateBR(v.date) + '</td>';
-      html += '<td style="border:1px solid #c8e6c9; padding:6px;"><strong>' + v.name + '</strong><br><small>ব্যাচ: ' + (v.batchNo || '-') + '</small></td>';
-      html += '<td style="border:1px solid #c8e6c9; padding:6px;">' + (v.dose || 5) + ' mL<br><small>' + (v.route || 'S/C') + '</small></td>';
-      html += '<td style="border:1px solid #c8e6c9; padding:6px; color:red;">' + formatDateBR(v.nextDate) + '</td>';
-      html += '<td style="border:1px solid #c8e6c9; padding:6px;">₹ ' + (v.cost || 0) + '</td>';
-      html += '<td style="border:1px solid #c8e6c9; padding:6px; text-align:center;">';
-      html += '<button class="action-btn btn-info" style="padding:2px 5px; font-size:10px;" onclick="editVaccineRecord(\'' + k + '\'); document.getElementById(\'cowVaccineDetailModal\').style.display=\'none\';">Edit</button> ';
-      html += '<button class="action-btn btn-danger" style="padding:2px 5px; font-size:10px;" onclick="deleteRecord(\'vaccine\',\'' + k + '\'); document.getElementById(\'cowVaccineDetailModal\').style.display=\'none\';">Del</button>';
-      html += '</td>';
-      html += '</tr>';
-    }
-  }
-  html += '</table>';
-  html += '</div>';
-
-  var modal = getEl('cowVaccineDetailModal');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.id = 'cowVaccineDetailModal';
-    modal.style.cssText = "display:flex; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:3000; align-items:center; justify-content:center; padding:15px;";
-    modal.innerHTML = '<div style="background:white; max-width:750px; width:100%; border-radius:12px; padding:25px; max-height:90vh; overflow-y:auto;"><div id="cowVaccineDetailContent"></div><div style="text-align:right; margin-top:15px;"><button class="btn btn-danger" onclick="document.getElementById(\'cowVaccineDetailModal\').style.display=\'none\'">বন্ধ করুন</button></div></div>';
-    document.body.appendChild(modal);
-  }
-  getEl('cowVaccineDetailContent').innerHTML = html;
-  modal.style.display = 'flex';
-};
-
-// ডিজিটাল হেলথ পাসপোর্ট
+// ডিজিটাল হেলথ পাসপোর্ট মোডাল (প্রিন্ট ও ডাউনলোড অপশনসহ)
 window.showDigitalHealthPassport = function(encTag) {
   var tag = decodeURIComponent(encTag).trim();
   var cow = farmStore.cattle ? farmStore.cattle[tag] : null;
@@ -238,7 +170,7 @@ window.showDigitalHealthPassport = function(encTag) {
     modal = document.createElement('div');
     modal.id = 'digitalPassportModal';
     modal.style.cssText = "display:flex; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:3000; align-items:center; justify-content:center; padding:15px;";
-    modal.innerHTML = '<div style="background:white; max-width:700px; width:100%; border-radius:12px; padding:25px; max-height:90vh; overflow-y:auto;"><div id="passportContent"></div><div style="text-align:right; margin-top:15px;"><button class="btn btn-info" onclick="window.print()">🖨️ প্রিন্ট করুন</button> <button class="btn btn-danger" onclick="document.getElementById(\'digitalPassportModal\').style.display=\'none\'">বন্ধ করুন</button></div></div>';
+    modal.innerHTML = '<div style="background:white; max-width:700px; width:100%; border-radius:12px; padding:25px; max-height:90vh; overflow-y:auto;"><div id="passportContent"></div><div style="text-align:right; margin-top:15px; display:flex; justify-content:flex-end; gap:10px;"><button class="btn btn-info" onclick="window.print()">🖨️ প্রিন্ট করুন</button><button class="btn btn-success" onclick="downloadHealthPassport(\'' + tag + '\')" style="background:#2e7d32; color:white; border:none; padding:8px 14px; border-radius:6px; cursor:pointer;">📥 ডাউনলোড করুন</button><button class="btn btn-danger" onclick="document.getElementById(\'digitalPassportModal\').style.display=\'none\'">বন্ধ করুন</button></div></div>';
     document.body.appendChild(modal);
   }
   getEl('passportContent').innerHTML = historyHtml;
@@ -255,7 +187,7 @@ function renderVaccineTable() {
   list.sort(function(a, b) { return (b.data.date || '').localeCompare(a.data.date || ''); });
 
   if (list.length === 0) {
-    body.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#777;">কোনো টিকা রেকর্ড নেই।</td></tr>';
+    body.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#777;">কোনো টিকা রেকর্ড নেই।</td></tr>';
     return;
   }
 
@@ -270,7 +202,6 @@ function renderVaccineTable() {
       '<td style="color:red; font-weight:bold;">' + formatDateBR(d.nextDate) + '</td>' +
       '<td>₹ ' + (d.cost || 0) + '</td>' +
       '<td><button class="action-btn" style="background:#455a64; color:white; padding:3px 7px; font-size:11px;" onclick="showDigitalHealthPassport(\'' + encodeURIComponent(d.tag) + '\')">পাসবুক</button></td>' +
-      '<td><button class="action-btn" style="background:#0288d1; color:white; padding:3px 7px; font-size:11px;" onclick="showSingleVaccineDetails(\'' + k + '\')">বিস্তারিত</button></td>' +
       '<td>' +
         '<button class="action-btn btn-info" onclick="editVaccineRecord(\'' + k + '\')">Edit</button> ' +
         '<button class="action-btn btn-danger" onclick="deleteRecord(\'vaccine\',\'' + k + '\')">Delete</button>' +
