@@ -1,4 +1,4 @@
-name: Convert Web App to APK
+name: Build PWA Android APK
 
 on:
   push:
@@ -18,16 +18,26 @@ jobs:
       with:
         node-version: '20'
 
-    - name: Install Nativefier or Webview Builder
-      run: |
-        npm install -g nativefier
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
 
-    - name: Build APK for Nanda Dairy & Agro
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+
+    - name: Install Bubblewrap CLI
+      run: npm install -g @bubblewrap/cli
+
+    - name: Initialize and Build APK
       run: |
-        nativefier --name "Nanda Dairy & Agro" "https://nandamunshi1999.github.io/Nanda-Dairy-And-Agro/" --platform android --arch arm64 --out ./apk-output
+        bubblewrap init --manifest https://nandamunshi1999.github.io/Nanda-Dairy-And-Agro/manifest.json --directory ./twa --skip-signing
+        cd twa
+        bubblewrap build
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: nanda-dairy-apk
-        path: ./apk-output/**/*.apk
+        path: ./twa/**/*.apk
