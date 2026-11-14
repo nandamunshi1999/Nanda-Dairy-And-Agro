@@ -64,7 +64,7 @@ jobs:
 
     - name: Build TWA APK
       run: |
-        bubblewrap build --manifest twa-manifest.json --skipKeytool
+        echo "n" | bubblewrap build --manifest twa-manifest.json --skipKeytool
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
