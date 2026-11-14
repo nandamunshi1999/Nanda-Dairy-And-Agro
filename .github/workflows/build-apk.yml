@@ -66,10 +66,11 @@ jobs:
       run: |
         export JAVA_HOME="$JAVA_HOME"
         export ANDROID_HOME="$ANDROID_HOME"
-        echo "n" | bubblewrap build --manifest twa-manifest.json --skipKeytool
+        printf "n\n%s\n" "$JAVA_HOME" | bubblewrap build --manifest twa-manifest.json --skipKeytool
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: nanda-dairy-apk
         path: app-release-signed.apk
+        
