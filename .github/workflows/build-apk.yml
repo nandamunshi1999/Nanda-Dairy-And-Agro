@@ -33,7 +33,7 @@ jobs:
     - name: Install Bubblewrap CLI
       run: npm install -g @bubblewrap/cli
 
-    - name: Create TWA Manifest File with Paths
+    - name: Create TWA Manifest File with Evaluated Paths
       run: |
         cat << EOF > twa-manifest.json
         {
