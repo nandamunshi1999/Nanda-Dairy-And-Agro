@@ -33,7 +33,7 @@ jobs:
     - name: Install Bubblewrap CLI
       run: npm install -g @bubblewrap/cli
 
-    - name: Create TWA Manifest File with Evaluated Paths
+    - name: Create TWA Manifest File
       run: |
         cat << EOF > twa-manifest.json
         {
@@ -52,8 +52,6 @@ jobs:
           "generatorApp": "bubblewrap-cli",
           "webManifestUrl": "https://nandamunshi1999.github.io/Nanda-Dairy-And-Agro/manifest.json",
           "fallbackType": "customtab",
-          "jdkPath": "$JAVA_HOME",
-          "androidSdkPath": "/usr/local/lib/android/sdk",
           "signingKey": {
             "path": "android.keystore",
             "alias": "android"
@@ -64,9 +62,30 @@ jobs:
         }
         EOF
 
-    - name: Build TWA APK Non-interactively
+    - name: Build TWA APK with Smart Automation
       run: |
-        bubblewrap build --manifest twa-manifest.json --skipKeytool --non-interactive
+        node -e '
+          const { spawn } = require("child_process");
+          const child = spawn("bubblewrap", ["build", "--manifest", "twa-manifest.json", "--skipKeytool"], {
+            env: process.env,
+            stdio: ["pipe", "pipe", "pipe"]
+          });
+          child.stdout.on("data", (data) => {
+            process.stdout.write(data);
+            const out = data.toString();
+            if (out.includes("Do you want Bubblewrap to install the JDK")) {
+              child.stdin.write("n\n");
+            } else if (out.includes("Path to your existing JDK")) {
+              child.stdin.write(process.env.JAVA_HOME + "\n");
+            }
+          });
+          child.stderr.on("data", (data) => {
+            process.stderr.write(data);
+          });
+          child.on("close", (code) => {
+            process.exit(code);
+          });
+        '
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
